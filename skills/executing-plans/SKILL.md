@@ -84,7 +84,7 @@ digraph process {
     "More tasks remain?" [shape=diamond];
     "Final whole-branch review (fresh reviewer if you have one)" [shape=box];
     "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger" [shape=box];
-    "Final review clean: delete this plan's workspace" [shape=box];
+    "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, workspace + ledger, read plan + spec, pre-flight scan" -> "task-start: brief + BASE; read the brief";
@@ -100,8 +100,8 @@ digraph process {
     "More tasks remain?" -> "task-start: brief + BASE; read the brief" [label="yes"];
     "More tasks remain?" -> "Final whole-branch review (fresh reviewer if you have one)" [label="no"];
     "Final whole-branch review (fresh reviewer if you have one)" -> "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger";
-    "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger" -> "Final review clean: delete this plan's workspace";
-    "Final review clean: delete this plan's workspace" -> "Use superpowers:finishing-a-development-branch";
+    "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger" -> "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)";
+    "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
@@ -125,10 +125,10 @@ and the new one resumes from the same ledger.
 - Each plan owns a workspace: at skill start, run
   `../subagent-driven-development/scripts/sdd-workspace PLAN_FILE` by its
   absolute path, from the working tree you're executing in — it
-  prints the plan's git-ignored directory
-  (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to every
+  prints the plan's workspace directory
+  (`<planning-dir>/sdd/<plan-basename>/`, versioned; the planning directory comes from `base.toml`), home to every
   artifact for THIS plan: ledger, briefs, review packages. Another plan's
-  directory is never yours to read or write.
+  directory is never yours to read or write. Only what agents use to execute lives here; anything a human must review or approve (audit or inventory reports, decision matrices, approval gates, final summaries) goes to the planning directory (resolved from `base.toml`), next to the plan, and the ledger links to it.
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
   line names your plan file, tasks with a `Task <N>: complete` line are
   DONE — do not redo them; resume at the first task without one. Their
@@ -299,8 +299,8 @@ line under "Deferred minors". Both lists are exhaustive. Your final
 message is the only place the decisions you took on your human partner's
 behalf — and the findings you chose not to act on — reach them.
 
-When the final review is clean and its fixes are committed, delete this
-plan's workspace directory — the git history is the record now. Sibling
+When the final review is clean and its fixes are committed, keep this
+plan's workspace directory, which lives under `<planning-dir>/sdd/` (versioned, the durable record) — with the git history it is the record now. Sibling
 directories belong to other plans; leave them alone.
 
 Use superpowers:finishing-a-development-branch.

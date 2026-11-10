@@ -62,7 +62,34 @@ slug=$(basename "$plan" .md)
 # strip Unix exec bits when unpacking marketplace packages (#2040).
 toplevel=$("${BASH:-bash}" "$here/sdd-repo")
 root=$(CDPATH='' cd -- "$toplevel" && pwd -P)
-base="$root/.superpowers/sdd"
+conf=${MADAMELABS_BASE_TOML:-$HOME/.config/madamelabs/base.toml}
+[ -f "$conf" ] || { echo "sdd-workspace: não encontrei $conf, que diz onde fica o planejamento desta máquina. Crie o arquivo (molde: exemplos/base.toml no repositório MadameLabs/skills, ou 'setup.py aplicar --base CAMINHO') e tente de novo." >&2; exit 3; }
+py=
+for cand in python3 python; do
+  if command -v "$cand" >/dev/null 2>&1 && "$cand" -c 'import tomllib' >/dev/null 2>&1; then py=$cand; break; fi
+done
+[ -n "$py" ] || { echo "sdd-workspace: preciso do Python 3.11 ou mais novo (módulo tomllib) para ler $conf; instale-o e tente de novo." >&2; exit 3; }
+base=$(PYTHONUTF8=1 "$py" - "$conf" "$(basename "$root")" <<'PY' | tr -d '\r'
+import os, sys, tomllib
+conf, repo = sys.argv[1], sys.argv[2]
+try:
+    with open(conf, "rb") as f:
+        dados = tomllib.load(f)
+except (OSError, tomllib.TOMLDecodeError) as erro:
+    sys.exit(f"sdd-workspace: não consegui ler {conf}: {erro}")
+base = dados.get("base")
+if isinstance(base, str):
+    base = base.replace("\\", "/")
+if not isinstance(base, str) or not os.path.isdir(base):
+    sys.exit(f"sdd-workspace: a base {base!r} de {conf} não existe nesta máquina; corrija o arquivo e tente de novo.")
+destino = (dados.get("repos") or {}).get(repo) or dados.get("padrao")
+if not isinstance(destino, str) or not destino:
+    sys.exit(f"sdd-workspace: {conf} não tem destino para {repo} nem o campo padrao.")
+base = base.replace("\\", "/").rstrip("/")
+destino = destino.replace("\\", "/").strip("/")
+sys.stdout.buffer.write(f"{base}/{destino}/sdd\n".encode())
+PY
+) || exit 3
 
 # Normalize the plan path (physical directory, so relative/absolute/../
 # spellings of one plan compare equal) and express it as the marker value:
@@ -99,7 +126,7 @@ fi
 
 # Create-only: a repo may commit its own .gitignore here (e.g. to version
 # progress.md ledgers); overwriting it would revert that on every run.
-[ -e "$base/.gitignore" ] || printf '*\n' > "$base/.gitignore"
+[ -e "$base/.gitignore" ] || # The workspace is versioned next to the plan, so it carries no self-ignoring .gitignore.
 
 # On Windows (Git Bash, MSYS2, Cygwin) print C:/Users/... rather than
 # /c/Users/... or /tmp/...: the caller may be PowerShell or another native

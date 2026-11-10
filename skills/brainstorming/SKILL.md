@@ -242,8 +242,8 @@ For a small change, the short design covers the same points in a line
 or two each and goes straight to your human partner, without the
 builder check.
 
-**Where it goes:** in a software repo,
-`docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`, committed.
+**Where it goes:** in a software repo or vault,
+the planning directory resolved by `~/.config/madamelabs/base.toml` (its `base` plus the entry for the repository's folder name, or `padrao`; if the file is missing, stop and warn the user, and never create a planning folder inside the repository), as `<topic>-design.md`, with no date prefix, committed.
 Otherwise, pick a sensible place and say where. Your human partner's
 preferences override both.
 

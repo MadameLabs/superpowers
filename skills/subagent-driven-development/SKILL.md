@@ -77,7 +77,7 @@ digraph process {
     "Setup: worktree, ledger check, read plan, pre-flight review" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Final review and finish: read references/final-review.md" [shape=box];
-    "Final review clean: delete this plan's workspace" [shape=box];
+    "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, ledger check, read plan, pre-flight review" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -93,8 +93,8 @@ digraph process {
     "Append completion to ledger, mark todo complete" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Final review and finish: read references/final-review.md" [label="no"];
-    "Final review and finish: read references/final-review.md" -> "Final review clean: delete this plan's workspace";
-    "Final review clean: delete this plan's workspace" -> "Use superpowers:finishing-a-development-branch";
+    "Final review and finish: read references/final-review.md" -> "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)";
+    "Final review clean: keep this plan's workspace (versioned in <planning-dir>/sdd)" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
@@ -112,10 +112,10 @@ a ledger file, not only in todos.
 
 - Each plan owns a workspace: at skill start, run this skill's
   `bash scripts/sdd-workspace PLAN_FILE` by its absolute path, from the
-  working tree you're executing in — it prints the plan's git-ignored
-  directory (under `<repo-root>/.superpowers/sdd/`), home to
+  working tree you're executing in — it prints the plan's workspace
+  directory (under `<planning-dir>/sdd/`, versioned; the planning directory comes from `base.toml`), home to
   every artifact for THIS plan: ledger, briefs, reports, review packages.
-  Another plan's directory is never yours to read or write.
+  Another plan's directory is never yours to read or write. Only what agents use to execute lives here; anything a human must review or approve (audit or inventory reports, decision matrices, approval gates, final summaries) goes to the planning directory (resolved from `base.toml`), next to the plan, and the ledger links to it.
 - Check for this plan's ledger at `<workspace>/progress.md`. If one exists,
   read [references/resuming.md](references/resuming.md) before anything
   else: it says whose ledger it is and where to resume.

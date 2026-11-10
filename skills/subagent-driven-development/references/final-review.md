@@ -42,7 +42,7 @@ whatever you got wrong. A ruling that dies with the workspace was a decision
 made in secret.
 
 When the final whole-branch review is clean and its fixes are merged,
-delete this plan's workspace (`rm -rf <workspace>`) — the git history is
+keep this plan's workspace: it lives under `<planning-dir>/sdd/`, is versioned and is the durable record next to the plan — with the git history it is
 the record now. Sibling directories belong to other plans; leave them
 alone.
 
